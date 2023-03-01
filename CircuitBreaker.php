@@ -3,15 +3,15 @@
 class CircuitBreaker
 {
     private int $failures = 0;
-    private int $threshold = 5;
     private int $halfOpenTimeout = 0;
     private CircuitBreakerState $state;
     private CircuitBreakerConfig $config;
 
     public function __construct(CircuitBreakerConfig $config)
     {
-        $this->threshold = $config->getThreshold();
-        $this->halfOpenTimeout = $config->getHalfOpenTimeout();
+        $this->config = $config;
+
+        $this->halfOpenTimeout = $this->config->getHalfOpenTimeout();
         $this->state = new CircuitBreakerState(CircuitBreakerState::STATE_CLOSED);
     }
 
@@ -52,7 +52,7 @@ class CircuitBreaker
     private function reset(): void
     {
         $this->failures = 0;
-        $this->state = new CircuitBreakerState(CircuitBreakerState::STATE_CLOSED);
         $this->halfOpenTimeout = $this->config->getHalfOpenTimeout();
+        $this->state = new CircuitBreakerState(CircuitBreakerState::STATE_CLOSED);
     }
 }

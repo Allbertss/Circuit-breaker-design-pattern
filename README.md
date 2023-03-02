@@ -13,7 +13,7 @@ try {
     });
 
     var_dump($result);
-} catch (Exception $exception) {
+} catch (CircuitBreakerStateOpenException $exception) {
 
 }
 ```

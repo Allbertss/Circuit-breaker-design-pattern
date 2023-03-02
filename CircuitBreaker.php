@@ -12,7 +12,7 @@ class CircuitBreaker
     }
 
     /**
-     * @throws Exception
+     * @throws CircuitBreakerStateOpenException
      */
     public function execute(callable $function): mixed
     {
@@ -21,7 +21,7 @@ class CircuitBreaker
                 $this->cache->set('state', CircuitBreakerState::STATE_HALF_OPEN, $this->config->getHalfOpenTimeout());
                 $this->cache->set('failures', 0);
             } else {
-                throw new Exception('Circuit breaker is ' . CircuitBreakerState::STATE_OPEN);
+                throw new CircuitBreakerStateOpenException();
             }
         }
 
@@ -38,7 +38,7 @@ class CircuitBreaker
                 $this->cache->set('state', CircuitBreakerState::STATE_OPEN);
                 $this->cache->set('halfOpenTimeout', time() + $this->config->getHalfOpenTimeout());
 
-                throw new Exception('Circuit breaker is ' . CircuitBreakerState::STATE_OPEN);
+                throw new CircuitBreakerStateOpenException();
             }
 
             throw $exception;

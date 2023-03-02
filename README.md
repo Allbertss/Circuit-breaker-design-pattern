@@ -1,8 +1,10 @@
 # Circuit breaker design pattern implementation in PHP
 
+## Config
+
 with **default** CircuitBreakerConfig
 ```php
-$circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig());
+$circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig(), $redis);
 
 try {
     $result = $circuitBreaker->execute(function () {
@@ -20,8 +22,10 @@ setup **custom** CircuitBreakerConfig
 $circuitBreakerConfig = (new CircuitBreakerConfig())
     ->setHalfOpenTimeout(10)
     ->setThreshold(10);
-$circuitBreaker = new CircuitBreaker($circuitBreakerConfig);
+$circuitBreaker = new CircuitBreaker($circuitBreakerConfig, $redis);
 ```
+
+## Cache
 
 example for implementing CacheInterface for Redis
 ```php

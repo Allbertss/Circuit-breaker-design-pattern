@@ -3,6 +3,7 @@
 ## Config
 
 with **default** CircuitBreakerConfig
+
 ```php
 $circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig(), $redis);
 
@@ -18,6 +19,7 @@ try {
 ```
 
 setup **custom** CircuitBreakerConfig
+
 ```php
 $circuitBreakerConfig = (new CircuitBreakerConfig())
     ->setHalfOpenTimeout(10)
@@ -28,12 +30,12 @@ $circuitBreaker = new CircuitBreaker($circuitBreakerConfig, $redis);
 ## Cache
 
 example for implementing CacheInterface for Redis
+
 ```php
 class RedisCache implements CacheInterface
 {
     public function __construct(private Redis $redis)
     {
-        $this->redis = $redis;
     }
 
     public function get(string $key): mixed

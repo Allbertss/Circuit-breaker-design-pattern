@@ -5,7 +5,7 @@
 with **default** CircuitBreakerConfig
 
 ```php
-$circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig(), $redis);
+$circuitBreaker = new CircuitBreaker(new CircuitBreakerConfig(), new RedisCache($redis));
 
 try {
     $result = $circuitBreaker->execute(function () {
@@ -24,7 +24,7 @@ setup **custom** CircuitBreakerConfig
 $circuitBreakerConfig = (new CircuitBreakerConfig())
     ->setHalfOpenTimeout(10)
     ->setThreshold(10);
-$circuitBreaker = new CircuitBreaker($circuitBreakerConfig, $redis);
+$circuitBreaker = new CircuitBreaker($circuitBreakerConfig, new RedisCache($redis));
 ```
 
 ## Cache

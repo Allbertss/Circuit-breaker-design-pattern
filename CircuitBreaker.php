@@ -2,17 +2,13 @@
 
 class CircuitBreaker
 {
-    private int $failures = 0;
-    private int $halfOpenTimeout = 0;
-    private CircuitBreakerState $state;
-    private CircuitBreakerConfig $config;
-
-    public function __construct(CircuitBreakerConfig $config)
+    public function __construct(
+        private readonly CircuitBreakerConfig $config,
+        private readonly CacheInterface       $cache,
+    )
     {
-        $this->config = $config;
-
-        $this->halfOpenTimeout = $this->config->getHalfOpenTimeout();
-        $this->state = new CircuitBreakerState(CircuitBreakerState::STATE_CLOSED);
+        $this->cache->set('halfOpenTimeout', $this->config->getHalfOpenTimeout());
+        $this->cache->set('state', CircuitBreakerState::STATE_CLOSED);
     }
 
     /**
@@ -20,12 +16,12 @@ class CircuitBreaker
      */
     public function execute(callable $function): mixed
     {
-        if ($this->state->getState() === CircuitBreakerState::STATE_OPEN) {
-            if (time() > $this->halfOpenTimeout) {
-                $this->state = new CircuitBreakerState(CircuitBreakerState::STATE_HALF_OPEN);
-                $this->failures = 0;
+        if ($this->cache->get('state') === CircuitBreakerState::STATE_OPEN) {
+            if (time() > $this->cache->get('halfOpenTimeout')) {
+                $this->cache->set('state', CircuitBreakerState::STATE_HALF_OPEN, $this->config->getHalfOpenTimeout());
+                $this->cache->set('failures', 0);
             } else {
-                throw new Exception("Circuit breaker is {$this->state->getState()}");
+                throw new Exception('Circuit breaker is ' . CircuitBreakerState::STATE_OPEN);
             }
         }
 
@@ -36,13 +32,13 @@ class CircuitBreaker
 
             return $result;
         } catch (Exception $exception) {
-            $this->failures++;
+            $this->cache->set('failures', $this->cache->get('failures') + 1);
 
-            if ($this->failures >= $this->config->getThreshold()) {
-                $this->state = new CircuitBreakerState(CircuitBreakerState::STATE_OPEN);
-                $this->halfOpenTimeout = time() + $this->config->getHalfOpenTimeout();
+            if ($this->cache->get('failures') >= $this->config->getThreshold()) {
+                $this->cache->set('state', CircuitBreakerState::STATE_OPEN);
+                $this->cache->set('halfOpenTimeout', time() + $this->config->getHalfOpenTimeout());
 
-                throw new Exception("Circuit breaker is {$this->state->getState()}");
+                throw new Exception('Circuit breaker is ' . CircuitBreakerState::STATE_OPEN);
             }
 
             throw $exception;
@@ -51,8 +47,8 @@ class CircuitBreaker
 
     private function reset(): void
     {
-        $this->failures = 0;
-        $this->halfOpenTimeout = $this->config->getHalfOpenTimeout();
-        $this->state = new CircuitBreakerState(CircuitBreakerState::STATE_CLOSED);
+        $this->cache->set('failures', 0);
+        $this->cache->set('halfOpenTimeout', $this->config->getHalfOpenTimeout());
+        $this->cache->set('state', CircuitBreakerState::STATE_CLOSED);
     }
 }
